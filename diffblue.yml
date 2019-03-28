@@ -1,4 +1,4 @@
-# Tested on Deeptest release 1.12.0
+java-version: 7
 cbmcArguments:
   java-generate-no-comments: true
 phases:
