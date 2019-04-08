@@ -1,4 +1,3 @@
-java-version: 7
 cbmcArguments:
   java-generate-no-comments: true
 phases:
@@ -45,3 +44,154 @@ phases:
     max-nondet-array-length: 30
     max-nondet-string-length: 10
     unwind: 3
+units:
+  # Target Coverage: Unknown %
+  - target:
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/core/Tag.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/core/Tag.java
+    # Child of Tag.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/StringUtils.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/StringUtils.java
+  # Target Coverage: Unknown %
+  - target:
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/core/Table.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/core/Table.java
+  # Target Coverage: Unknown %
+  - target:
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/core/FeatureResult.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/core/FeatureResult.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/core/Feature.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/core/Feature.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/core/Scenario.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/core/Scenario.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/ScriptValueMap.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/ScriptValueMap.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/Resource.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/Resource.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/core/Engine.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/core/Engine.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/core/Tags.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/core/Tags.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/FileUtils.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/FileUtils.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/core/StepResult.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/core/StepResult.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/JsonUtils.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/JsonUtils.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/exception/KarateException.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/exception/KarateException.java
+    # Child of FeatureResult.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/core/ScenarioResult.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/core/ScenarioResult.java
+  # Target Coverage: Unknown %
+  - target:
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/http/HttpRequestBuilder.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/http/HttpRequestBuilder.java
+    # Child of HttpRequestBuilder.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/http/Cookie.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/http/Cookie.java
+    # Child of HttpRequestBuilder.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/http/MultiValuedMap.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/http/MultiValuedMap.java
+    # Child of HttpRequestBuilder.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/ScriptValue.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/ScriptValue.java
+    # Child of HttpRequestBuilder.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/http/MultiPartItem.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/http/MultiPartItem.java
+  # Target Coverage: Unknown %
+  - target:
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/http/HttpUtils.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/http/HttpUtils.java
+    # Child of HttpUtils.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/http/HttpClient.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/http/HttpClient.java
+    # Child of HttpUtils.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/http/LenientTrustManager.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/http/LenientTrustManager.java
+    # Child of HttpUtils.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/core/ScenarioContext.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/core/ScenarioContext.java
+    # Child of HttpUtils.class
+    # Child Coverage: Unknown %
+    - dir: karate-core/target/classes
+      file: com/intuit/karate/Logger.class
+      sourceDir: karate-core/src/main/java
+      sourceFile: com/intuit/karate/Logger.java
