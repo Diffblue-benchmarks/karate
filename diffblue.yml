@@ -1,197 +1,798 @@
 cbmcArguments:
+  # Do not generate coverage comments on generated tests.
   java-generate-no-comments: true
+  # Constrain the size of arrays created in the analyzed code.
+  java-max-vla-length: 100000
 phases:
--
-  timeout: 60
-  cbmcArguments:
-    max-nondet-array-length: 10
-    unwind: 1
-    string-non-empty: true
-    java-assume-inputs-non-null: true
--
-  timeout: 60
-  cbmcArguments:
-    classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
-    max-nondet-array-length: 10
-    unwind: 1
--
-  timeout: 60
-  cbmcArguments:
-    classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
-    max-nondet-array-length: 20
-    unwind: 2
-    string-non-empty: true
-    java-assume-inputs-non-null: true
--
-  timeout: 60
-  cbmcArguments:
-    classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
-    max-nondet-array-length: 20
-    unwind: 2
--
-  timeout: 60
-  cbmcArguments:
-    classpath: '/tools/cbmc/models.jar:.'
-    max-nondet-array-length: 30
-    max-nondet-string-length: 10
-    unwind: 3
-    string-non-empty: true
-    java-assume-inputs-non-null: true
--
-  timeout: 60
-  cbmcArguments:
-    classpath: '/tools/cbmc/models.jar:.'
-    max-nondet-array-length: 30
-    max-nondet-string-length: 10
-    unwind: 3
+  -
+    # Phase 0 PRETTY, SIMPLE and SMART - pretty tests, do not test private methods directly, Smart-Harness
+    timeout: 180
+    cbmcArguments:
+      # Use simple models first containers (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 1500
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # Instrument the file as opposed to the function only
+      cover-only: file
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Instantiate classes using the simplest constructor strategy
+      smart-harness: simplest-constructor-and-nondet
+  -
+    # Phase 1 PRETTY AND COMPLEX - standard models only, pretty tests, do not test private methods directly, input factory
+    timeout: 180
+    cbmcArguments:
+      # Use the standard models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 2
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+      # Limit input factory recursive depth (default 0 = no recursion allowed)
+      java-test-input-factory-bmc-recursion-limit: 4
+  -
+    # Phase 2 FIFO Strategy - pretty tests, do not test private methods directly, fifo
+    timeout: 100
+    cbmcArguments:
+      # Use the standard models library
+      classpath: '/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Add constraint that strings are printable
+      max-nondet-string-length: 100
+      # Explores the program tree breadth-first.
+      paths: fifo
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: false
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+  -
+    # Phase 3 Exceptions - do not test private methods directly
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers first (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: false
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 30
+      # Add constraint that strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
+  -
+    # Phase 4 Direct testing - test private methods directly, increased reflection
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers first (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 1500
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 10
+      # Bound the length of input strings.
+      max-nondet-string-length: 10
+      # Add constraint that strings are printable
+      string-printable: true
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: false
+      # Set an upper bound on loop unwinding.
+      unwind: 1
+      # Set string input value
+      string-input-value: ["foo", "Bar", "BAZ", "1234", "1a 2b 3c", "A1B2C3", "a,b,c", "1", "2", "3", "a/b/c", "a'b'c", ",", "/", "'"]
+      # If the logs contain output of the following then proceed to phase X
+    nextPhase:
+      # If the function is not analysable then do not pass onto the next phase
+      not_analyzed: null
+  -
+    # PHASE 5 Mocking - aggressive mocking, do not test private methods directly
+    timeout: 180
+    cbmcArguments:
+      # Use simple models containers first (ArrayList, HashMap, HashSet,...) will have a maximum size of one.
+      classpath: '/tools/cbmc/models-simple-overlay.jar:/tools/cbmc/models.jar:.'
+      # Set a limit on the number of instructions that can be generated as part of a test trace.
+      depth: 3000
+      # never initialize reference-typed parameter to the entry point with null
+      java-assume-inputs-non-null: true
+      # Only load the class (and related inner/outer classes) containing the method under test,
+      load-containing-class-only: true
+      # Maximum allowed length for an array passed as test input.
+      max-nondet-array-length: 30
+      # Bound the length of input strings.
+      max-nondet-string-length: 100
+      # Add constraint that strings are printable
+      string-printable: false
+      # Make implicit runtime exceptions explicit.
+      throw-runtime-exceptions: true
+      # Set an upper bound on loop unwinding.
+      unwind: 3
+      # Do not test any methods that have the specified access level.
+      do-not-test-methods-with-access: [private]
+      # Instrument the entry point function only.
+      cover-function-only: false
+      # instrument the file as opposed to the function only
+      cover-only: file
 units:
-  # Target Coverage: Unknown %
-  - target:
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/core/Tag.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/core/Tag.java
-    # Child of Tag.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/StringUtils.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/StringUtils.java
-  # Target Coverage: Unknown %
-  - target:
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/core/Table.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/core/Table.java
-  # Target Coverage: Unknown %
-  - target:
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/core/FeatureResult.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/core/FeatureResult.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/core/Feature.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/core/Feature.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/core/Scenario.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/core/Scenario.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/ScriptValueMap.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/ScriptValueMap.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/Resource.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/Resource.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/core/Engine.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/core/Engine.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/core/Tags.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/core/Tags.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/FileUtils.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/FileUtils.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/core/StepResult.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/core/StepResult.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/JsonUtils.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/JsonUtils.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/exception/KarateException.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/exception/KarateException.java
-    # Child of FeatureResult.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/core/ScenarioResult.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/core/ScenarioResult.java
-  # Target Coverage: Unknown %
-  - target:
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/http/HttpRequestBuilder.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/http/HttpRequestBuilder.java
-    # Child of HttpRequestBuilder.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/http/Cookie.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/http/Cookie.java
-    # Child of HttpRequestBuilder.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/http/MultiValuedMap.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/http/MultiValuedMap.java
-    # Child of HttpRequestBuilder.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/ScriptValue.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/ScriptValue.java
-    # Child of HttpRequestBuilder.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/http/MultiPartItem.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/http/MultiPartItem.java
-  # Target Coverage: Unknown %
-  - target:
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/http/HttpUtils.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/http/HttpUtils.java
-    # Child of HttpUtils.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/http/HttpClient.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/http/HttpClient.java
-    # Child of HttpUtils.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/http/LenientTrustManager.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/http/LenientTrustManager.java
-    # Child of HttpUtils.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/core/ScenarioContext.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/core/ScenarioContext.java
-    # Child of HttpUtils.class
-    # Child Coverage: Unknown %
-    - dir: karate-core/target/classes
-      file: com/intuit/karate/Logger.class
-      sourceDir: karate-core/src/main/java
-      sourceFile: com/intuit/karate/Logger.java
+ - target:
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StringUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StringUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StringUtils$Pair.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StringUtils.java
+ - target:
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/http/HttpUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/http/HttpUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/Resource.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/Resource.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/http/LenientTrustManager.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/http/LenientTrustManager.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/http/Cookie.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/http/Cookie.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/http/MultiPartItem.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/http/MultiPartItem.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StringUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StringUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StringUtils$Pair.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StringUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/LogAppender.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/LogAppender.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/FileUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/FileUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptValue$Type.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptValue.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptValue.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptValue.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/XmlUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/XmlUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/Logger.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/Logger.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioContext.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioContext.java
+ - target:
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/JsonUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/JsonUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/JsonUtils$NashornObjectJsonWriter.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/JsonUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StringUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StringUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/JsonUtils$1.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/JsonUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StringUtils$Pair.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StringUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/JsonUtils$FeatureJsonWriter.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/JsonUtils.java
+ - target:
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/Script.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/Script.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Result.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Result.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Feature.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Feature.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/AssertionResult.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/AssertionResult.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/validator/Validator.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/validator/Validator.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/exception/KarateException.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/exception/KarateException.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/XmlUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/XmlUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/Resource.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/Resource.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StepActions.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StepActions.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/validator/RegexValidator.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/validator/RegexValidator.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Step.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Step.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptValue.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptValue.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioResult.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioResult.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ExecutionHook.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ExecutionHook.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Table.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Table.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StringUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StringUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/LogAppender.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/LogAppender.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/MatchType.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/MatchType.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptValueMap.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptValueMap.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Tag.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Tag.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/CallContext.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/CallContext.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Tags.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Tags.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/shell/FileLogAppender.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/shell/FileLogAppender.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptValue$Type.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptValue.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/validator/ValidationResult.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/validator/ValidationResult.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptBindings.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptBindings.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/PerfEvent.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/PerfEvent.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Scenario.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Scenario.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/JsonUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/JsonUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/driver/Driver.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/driver/Driver.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioOutline.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioOutline.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/Logger.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/Logger.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/AssignType.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/AssignType.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/http/HttpClient.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/http/HttpClient.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/XmlUtils$DtdEntityResolver.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/XmlUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioInfo.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioInfo.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StringUtils$Pair.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StringUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptObjectMap.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptObjectMap.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScriptBridge.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScriptBridge.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/FeatureContext.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/FeatureContext.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/FeatureExecutionUnit.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/FeatureExecutionUnit.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/MethodPattern.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/MethodPattern.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Engine.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Engine.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/FeatureResult.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/FeatureResult.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/StepResult.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/StepResult.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/http/MultiValuedMap.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/http/MultiValuedMap.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Background.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Background.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioExecutionUnit.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioExecutionUnit.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/FeatureSection.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/FeatureSection.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/Config.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/Config.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptEvalContext.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptEvalContext.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Tags$Values.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Tags.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/CallResult.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/CallResult.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/FileUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/FileUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ExecutionContext.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ExecutionContext.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/validator/ArrayValidator.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/validator/ArrayValidator.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/http/HttpRequestBuilder.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/http/HttpRequestBuilder.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioContext.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioContext.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/MethodMatch.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/MethodMatch.java
+ - target:
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/FileUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/FileUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Result.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Result.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$ScenarioContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/exception/KarateFileNotFoundException.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/exception/KarateFileNotFoundException.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Feature.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Feature.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/StepResult.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/StepResult.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/driver/Driver.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/driver/Driver.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$FeatureContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Tag.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Tag.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParserBaseListener.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParserBaseListener.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScriptBridge.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScriptBridge.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/http/MultiValuedMap.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/http/MultiValuedMap.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateLexer.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateLexer.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/FileUtils$Platform.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/FileUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$FeatureHeaderContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$DocStringContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/FeatureParser.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/FeatureParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Step.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Step.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptValue.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptValue.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/shell/FileLogAppender.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/shell/FileLogAppender.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Table.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Table.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/Config.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/Config.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StringUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StringUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/LogAppender.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/LogAppender.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$BackgroundContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptValueMap.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptValueMap.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/XmlUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/XmlUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/CallContext.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/CallContext.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioOutline.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioOutline.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioResult.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioResult.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptValue$Type.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptValue.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptObjectMap.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptObjectMap.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/PerfEvent.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/PerfEvent.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/Script.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/Script.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Scenario.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Scenario.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/JsonUtils.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/JsonUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$TagsContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ExecutionHook.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ExecutionHook.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/exception/KarateException.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/exception/KarateException.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Tags.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Tags.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/Logger.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/Logger.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ParserErrorListener.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ParserErrorListener.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$StepContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$FeatureDescriptionContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/XmlUtils$DtdEntityResolver.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/XmlUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioInfo.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioInfo.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StringUtils$Pair.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StringUtils.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$ScenarioOutlineContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$LineContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$TableContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/ScriptBindings.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/ScriptBindings.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/Resource.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/Resource.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/FeatureContext.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/FeatureContext.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/FeatureExecutionUnit.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/FeatureExecutionUnit.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/MethodPattern.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/MethodPattern.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Background.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Background.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/http/HttpRequestBuilder.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/http/HttpRequestBuilder.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$ScenarioDescriptionContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/StepActions.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/StepActions.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Engine.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Engine.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioExecutionUnit.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioExecutionUnit.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/FeatureSection.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/FeatureSection.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$ExampleDescriptionContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/Tags$Values.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/Tags.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$ExamplesContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$PrefixContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/CallResult.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/CallResult.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/http/HttpClient.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/http/HttpClient.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ExecutionContext.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ExecutionContext.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/KarateParser$FeatureTagsContext.class
+     sourceDir: karate-core/target/generated-sources/antlr4
+     sourceFile: com/intuit/karate/core/KarateParser.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/FeatureResult.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/FeatureResult.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/ScenarioContext.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/ScenarioContext.java
+   - dir: karate-core/target/classes
+     file: com/intuit/karate/core/MethodMatch.class
+     sourceDir: karate-core/src/main/java
+     sourceFile: com/intuit/karate/core/MethodMatch.java
